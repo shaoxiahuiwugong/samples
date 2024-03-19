@@ -1,0 +1,39 @@
+apiVersion: core.openfunction.io/v1beta2
+kind: Function
+metadata:
+  name: function-sample
+spec:
+  version: "v2.0.0"
+  image: "<image-registry>/sample-go-path-params-func:v1"
+  imageCredentials:
+    name: push-secret
+  build:
+    builder: openfunction/builder-go:v2.4.0-1.17
+    env:
+      FUNC_NAME: "pathParametersFunction"
+      FUNC_CLEAR_SOURCE: "true"
+#     # Use FUNC_GOPROXY to set the goproxy if failed to fetch go modules
+#     FUNC_GOPROXY: "https://goproxy.cn"
+    srcRepo:
+      url: "https://github.com/OpenFunction/samples.git"
+      sourceSubPath: "functions/knative/path-parameters-function-go"
+      revision: "main"
+  serving:
+    template:
+      containers:
+        - name: function
+          imagePullPolicy: Always
+    triggers:
+      http:
+        port: 8080
+    annotations:
+      # to enable dapr manually
+      # Dapr annotations: https://docs.dapr.io/reference/arguments-annotations-overview/
+      dapr.io/enabled: "true"
+      dapr.io/app-id: "function-sample-default"
+      dapr.io/app-port: "8080" # must equal to function port
+      dapr.io/dapr-grpc-port: "50001"
+      dapr.io/log-as-json: "true"
+      dapr.io/app-protocol: "grpc"
+      dapr.io/enable-metrics: "true"
+      dapr.io/metrics-port: "19090"

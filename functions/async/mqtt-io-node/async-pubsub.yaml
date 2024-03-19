@@ -1,0 +1,52 @@
+apiVersion: core.openfunction.io/v1beta2
+kind: Function
+metadata:
+  name: sample-node-async-pubsub
+  namespace: default
+spec:
+  image: your-docker-registry/image:v1
+  # imageCredentials:
+  #   name: your-docker-registry-secret
+  # build:
+  #   builder: openfunction/builder-node:v2-16.13
+  #   env:
+  #     FUNC_NAME: tryKnative
+  #   srcRepo:
+  #     url: https://github.com/OpenFunction/samples.git
+  #     sourceSubPath: functions/async/mqtt-io-node
+  #     revision: main
+  serving:
+    annotations:
+      dapr.io/app-protocol: http
+      dapr.io/log-as-json: "false"
+      dapr.io/log-level: debug
+    outputs:
+      - dapr:
+          name: mqtt-pubsub
+          topic: pub
+          type: pubsub.mqtt
+    params:
+      DEBUG: common:*,ofn:*
+      FUNCTION_TARGET: tryAsync
+    pubsub:
+      mqtt-pubsub:
+        metadata:
+          - name: consumerID
+            value: '{uuid}'
+          - name: url
+            value: tcp://admin:public@emqx:1883
+          - name: qos
+            value: 1
+        type: pubsub.mqtt
+        version: v1
+    template:
+      containers:
+        - imagePullPolicy: IfNotPresent
+          name: function
+    triggers:
+      dapr:
+        - name: mqtt-pubsub
+          topic: sub
+          type: pubsub.mqtt
+  version: v2.0.0
+  workloadRuntime: OCIContainer

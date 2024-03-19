@@ -1,0 +1,28 @@
+apiVersion: core.openfunction.io/v1beta2
+kind: Function
+metadata:
+  name: logs-sync-handler
+spec:
+  version: "v2.0.0"
+  image: openfunctiondev/logs-sync-handler:v2
+  imageCredentials:
+    name: push-secret
+  build:
+    builder: openfunction/builder-go:latest
+    env:
+      FUNC_NAME: "LogsHandler"
+      FUNC_CLEAR_SOURCE: "true"
+#     # Use FUNC_GOPROXY to set the goproxy if failed to fetch go modules
+#     FUNC_GOPROXY: "https://goproxy.cn"
+    srcRepo:
+      url: "https://github.com/OpenFunction/samples.git"
+      sourceSubPath: "functions/knative/logs-handler-function/"
+      revision: "main"
+  serving:
+    template:
+      containers:
+        - name: function # DO NOT change this
+          imagePullPolicy: IfNotPresent
+    triggers:
+      http:
+        port: 8080
